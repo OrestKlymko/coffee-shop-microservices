@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    container_name: 'coffee-db'
+    environment:
+      - 'POSTGRES_DB=coffee'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_USER=myuser'
+    ports:
+      - '5432'
+
+  order-service:
+    build: order-service
+    container_name: 'order-service'
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+
+  barista-service:
+    build: barista-service
+    container_name: 'barista-service'
+    ports:
+      - '8185:8185'
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    ports:
+      - '2181:2181'
+    container_name: 'zookeeper'
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: yes
+  kafka:
+    image: wurstmeister/kafka
+    container_name: 'kafka'
+    ports:
+      - '9092:9092'
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
